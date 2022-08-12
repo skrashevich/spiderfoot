@@ -1,4 +1,3 @@
-# test_sfp_koodous.py
 import pytest
 import unittest
 
@@ -9,20 +8,13 @@ from spiderfoot import SpiderFootEvent, SpiderFootTarget
 
 @pytest.mark.usefixtures
 class TestModuleKoodous(unittest.TestCase):
-    """
-    Test modules.sfp_koodous
-    """
 
     def test_opts(self):
         module = sfp_koodous()
         self.assertEqual(len(module.opts), len(module.optdescs))
 
     def test_setup(self):
-        """
-        Test setup(self, sfc, userOpts=dict())
-        """
         sf = SpiderFoot(self.default_options)
-
         module = sfp_koodous()
         module.setup(sf, dict())
 
@@ -34,18 +26,38 @@ class TestModuleKoodous(unittest.TestCase):
         module = sfp_koodous()
         self.assertIsInstance(module.producedEvents(), list)
 
-    @unittest.skip("todo")
-    def test_handleEvent(self):
-        """
-        Test handleEvent(self, event)
-        """
+    def test_parseApiResponse_nonfatal_http_response_code_should_not_set_errorState(self):
+        sf = SpiderFoot(self.default_options)
+
+        http_codes = ["200", "404"]
+        for code in http_codes:
+            with self.subTest(code=code):
+                module = sfp_koodous()
+                module.setup(sf, dict())
+                result = module.parseApiResponse({"code": code, "content": None})
+                self.assertIsNone(result)
+                self.assertFalse(module.errorState)
+
+    def test_parseApiResponse_fatal_http_response_error_code_should_set_errorState(self):
+        sf = SpiderFoot(self.default_options)
+
+        http_codes = ["401", "402", "403", "429", "500", "502", "503"]
+        for code in http_codes:
+            with self.subTest(code=code):
+                module = sfp_koodous()
+                module.setup(sf, dict())
+                result = module.parseApiResponse({"code": code, "content": None})
+                self.assertIsNone(result)
+                self.assertTrue(module.errorState)
+
+    def test_handleEvent_no_api_key_should_set_errorState(self):
         sf = SpiderFoot(self.default_options)
 
         module = sfp_koodous()
         module.setup(sf, dict())
 
         target_value = 'example target value'
-        target_type = 'IP_ADDRESS'
+        target_type = 'EMAILADDR'
         target = SpiderFootTarget(target_value, target_type)
         module.setTarget(target)
 
@@ -58,3 +70,4 @@ class TestModuleKoodous(unittest.TestCase):
         result = module.handleEvent(evt)
 
         self.assertIsNone(result)
+        self.assertTrue(module.errorState)

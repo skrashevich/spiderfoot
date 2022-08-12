@@ -7,7 +7,7 @@
 #
 # Created:     12/04/2014
 # Copyright:   (c) Steve Micallef 2014
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import json
@@ -127,7 +127,6 @@ class sfp_robtex(SpiderFootPlugin):
             else:
                 max_netblock = self.opts['maxnetblock']
 
-            max_netblock = self.opts['maxnetblock']
             if IPNetwork(eventData).prefixlen < max_netblock:
                 self.debug(f"Network size bigger than permitted: {IPNetwork(eventData).prefixlen} > {max_netblock}")
                 return

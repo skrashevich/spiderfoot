@@ -61,6 +61,9 @@ class SpiderFootCorrelator:
         if not isinstance(ruleset, dict):
             raise TypeError(f"ruleset is {type(ruleset)}; expected dict()")
 
+        if not isinstance(dbh, SpiderFootDb):
+            raise TypeError(f"dbh is {type(dbh)}; expected SpiderFootDb()")
+
         self.dbh = dbh
 
         if scanId and not isinstance(scanId, str):
@@ -135,7 +138,12 @@ class SpiderFootCorrelator:
 
         Returns:
             dict: criteria to be used with SpiderFootDb.scanResultEvent()
+
+        Raises:
+            TypeError: argument type was invalid
         """
+        if not isinstance(matchrule, dict):
+            raise TypeError(f"matchrule is {type(matchrule)}; expected dict()")
 
         criterias = dict()
 
@@ -189,7 +197,7 @@ class SpiderFootCorrelator:
                 criterias['srcModule'] = list()
 
             if matchrule['method'] == 'exact':
-                if type(matchrule['value']) == list:
+                if isinstance(matchrule['value'], list):
                     criterias['srcModule'].extend(matchrule['value'])
                 else:
                     criterias['srcModule'].append(matchrule['value'])
@@ -199,7 +207,7 @@ class SpiderFootCorrelator:
             if 'data' not in criterias:
                 criterias['data'] = list()
 
-            if type(matchrule['value']) == list:
+            if isinstance(matchrule['value'], list):
                 for v in matchrule['value']:
                     criterias['data'].append(v.encode('raw_unicode_escape'))
             else:
@@ -212,7 +220,12 @@ class SpiderFootCorrelator:
 
         Args:
             events (dict): events
+
+        Raises:
+            TypeError: argument type was invalid
         """
+        if not isinstance(events, dict):
+            raise TypeError(f"events is {type(events)}; expected dict()")
 
         event_chunks = [list(events.keys())[x:(x + 5000)] for x in range(0, len(list(events.keys())), 5000)]
 
@@ -234,7 +247,12 @@ class SpiderFootCorrelator:
 
         Args:
             events (dict): events
+
+        Raises:
+            TypeError: argument type was invalid
         """
+        if not isinstance(events, dict):
+            raise TypeError(f"events is {type(events)}; expected dict()")
 
         event_chunks = [list(events.keys())[x:x + 5000] for x in range(0, len(list(events.keys())), 5000)]
 
@@ -257,7 +275,12 @@ class SpiderFootCorrelator:
 
         Args:
             events (dict): events
+
+        Raises:
+            TypeError: argument type was invalid
         """
+        if not isinstance(events, dict):
+            raise TypeError(f"events is {type(events)}; expected dict()")
 
         entity_missing = dict()
         for event_id in events:
@@ -449,7 +472,7 @@ class SpiderFootCorrelator:
         """
         patterns = list()
 
-        if type(matchrule['value']) == list:
+        if isinstance(matchrule['value'], list):
             for r in matchrule['value']:
                 patterns.append(str(r))
         else:
@@ -644,8 +667,7 @@ class SpiderFootCorrelator:
             for event in buckets[bucket][:]:
                 if event['_collection'] == 0:
                     continue
-                else:
-                    pluszerocount += 1
+                pluszerocount += 1
 
                 if not check_event(self.event_extract(event, rule['field']), reference):
                     buckets[bucket].remove(event)
@@ -830,7 +852,12 @@ class SpiderFootCorrelator:
 
         Returns:
             list: TBD
+
+        Raises:
+            TypeError: argument type was invalid
         """
+        if not isinstance(rule, dict):
+            raise TypeError(f"rule is {type(rule)}; expected dict()")
 
         events = list()
         buckets = dict()
@@ -880,17 +907,26 @@ class SpiderFootCorrelator:
 
         Returns:
             str: correlation rule title
+
+        Raises:
+            TypeError: argument type was invalid
         """
+        if not isinstance(rule, dict):
+            raise TypeError(f"rule is {type(rule)}; expected dict()")
+
+        if not isinstance(data, list):
+            raise TypeError(f"data is {type(data)}; expected list()")
+
         title = rule['headline']
-        if type(title) == dict:
+        if isinstance(title, dict):
             title = title['text']
+
         fields = re.findall(r"{([a-z\.]+)}", title)
         for m in fields:
             try:
                 v = self.event_extract(data[0], m)[0]
             except Exception:
                 self.log.error(f"Field requested was not available: {m}")
-                pass
             title = title.replace("{" + m + "}", v.replace("\r", "").split("\n")[0])
         return title
 
@@ -938,6 +974,9 @@ class SpiderFootCorrelator:
         Returns:
             bool: correlation rule set is valid
         """
+        if not isinstance(rules, list):
+            return False
+
         ok = True
         for rule in rules:
             if not self.check_rule_validity(rule):
@@ -956,8 +995,20 @@ class SpiderFootCorrelator:
         Returns:
             bool: correlation rule is valid
         """
-        ok = True
+        if not isinstance(rule, dict):
+            return False
+
         fields = set(rule.keys())
+
+        if not fields:
+            self.log.error("Rule is empty.")
+            return False
+
+        if not rule.get('id'):
+            self.log.error("Rule has no ID.")
+            return False
+
+        ok = True
 
         for f in self.mandatory_components:
             if f not in fields:
@@ -1002,15 +1053,20 @@ class SpiderFootCorrelator:
             alloptions = set(strictoptions).union(otheroptions)
 
             for opt in strictoptions:
-                if type(rule[field]) == list:
+                if isinstance(rule[field], list):
                     for item, optelement in enumerate(rule[field]):
                         if not optelement.get(opt):
                             self.log.error(f"Required field for {field} missing in {rule['id']}, item {item}: {opt}")
                             ok = False
                     continue
 
-                if not rule[field].get(opt):
-                    self.log.error(f"Required field for {field} missing in {rule['id']}: {opt}")
+                if isinstance(rule[field], dict):
+                    if not rule[field].get(opt):
+                        self.log.error(f"Required field for {field} missing in {rule['id']}: {opt}")
+                        ok = False
+
+                else:
+                    self.log.error(f"Rule field '{field}' is not a list() or dict()")
                     ok = False
 
                 # Check if any of the options aren't valid

@@ -1,7 +1,7 @@
 <a href="https://www.spiderfoot.net/r.php?u=aHR0cHM6Ly93d3cuc3BpZGVyZm9vdC5uZXQv&s=os_gh"><img src="https://www.spiderfoot.net/wp-content/themes/spiderfoot/img/spiderfoot-wide.png"></a>
 
 
-[![License](https://img.shields.io/badge/license-GPLv2-blue.svg)](https://raw.githubusercontent.com/smicallef/spiderfoot/master/LICENSE)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/smicallef/spiderfoot/master/LICENSE)
 [![Python Version](https://img.shields.io/badge/python-3.7+-green)](https://www.python.org)
 [![Stable Release](https://img.shields.io/badge/version-4.0-blue.svg)](https://github.com/smicallef/spiderfoot/releases/tag/v4.0)
 [![CI status](https://github.com/smicallef/spiderfoot/workflows/Tests/badge.svg)](https://github.com/smicallef/spiderfoot/actions?query=workflow%3A"Tests")
@@ -12,7 +12,7 @@
 
 **SpiderFoot** is an open source intelligence (OSINT) automation tool. It integrates with just about every data source available and utilises a range of methods for data analysis, making that data easy to navigate. 
 
-SpiderFoot has an embedded web-server for providing a clean and intuitive web-based interface but can also be used completely via the command-line.  It's written in **Python 3** and **GPL-licensed**.
+SpiderFoot has an embedded web-server for providing a clean and intuitive web-based interface but can also be used completely via the command-line.  It's written in **Python 3** and **MIT-licensed**.
 
 <img src="https://www.spiderfoot.net/wp-content/uploads/2022/04/opensource-screenshot-v4.png" />
 
@@ -182,7 +182,6 @@ Cross-Referencer|Identify whether other domains are associated ('Affiliates') of
 [CRXcavator](https://crxcavator.io/)|Search CRXcavator for Chrome extensions.|Free API
 Custom Threat Feed|Check if a host/domain, netblock, ASN or IP is malicious according to your custom feed.|Internal
 [CyberCrime-Tracker.net](https://cybercrime-tracker.net/)|Check if a host/domain or IP address is malicious according to CyberCrime-Tracker.net.|Free API
-[Darksearch](https://darksearch.io/)|Search the Darksearch.io Tor search engine for mentions of the target domain.|Free API
 [Debounce](https://debounce.io/)|Check whether an email is disposable|Free API
 [Dehashed](https://www.dehashed.com/)|Gather breach data from Dehashed API.|Commercial API
 [Digital Ocean Space Finder](https://www.digitalocean.com/products/spaces/)|Search for potential Digital Ocean Spaces associated with the target and attempt to list their contents.|Free API
@@ -266,7 +265,6 @@ Junk File Finder|Looks for old/temporary and other similar files.|Internal
 [Onionsearchengine.com](https://as.onionsearchengine.com)|Search Tor onionsearchengine.com for mentions of the target domain.|Free API
 [Onyphe](https://www.onyphe.io)|Check Onyphe data (threat list, geo-location, pastries, vulnerabilities)  about a given IP.|Tiered API
 [Open Bug Bounty](https://www.openbugbounty.org/)|Check external vulnerability scanning/reporting service openbugbounty.org to see if the target is listed.|Free API
-[Open Passive DNS Database](http://pdns.daloo.de/)|Obtain passive DNS information from pdns.daloo.de Open passive DNS database.|Free API
 [OpenCorporates](https://opencorporates.com)|Look up company information from OpenCorporates.|Tiered API
 [OpenDNS](https://www.opendns.com/)|Check if a host would be blocked by OpenDNS.|Free API
 [OpenNIC DNS](https://www.opennic.org/)|Resolves host names in the OpenNIC alternative DNS system.|Free API
@@ -285,12 +283,10 @@ Port Scanner - TCP|Scans for commonly open TCP ports on Internet-facing systems.
 [Pulsedive](https://pulsedive.com/)|Obtain information from Pulsedive's API.|Tiered API
 [PunkSpider](https://punkspider.io/)|Check the QOMPLX punkspider.io service to see if the target is listed as vulnerable.|Free API
 [Quad9](https://quad9.net/)|Check if a host would be blocked by Quad9 DNS.|Free API
-[Recon.dev](https://recon.dev)|Search Recon.dev for subdomains.|Free API
 [ReverseWhois](https://www.reversewhois.io/)|Reverse Whois lookups using reversewhois.io.|Free API
 [RIPE](https://www.ripe.net/)|Queries the RIPE registry (includes ARIN data) to identify netblocks and other info.|Free API
 [RiskIQ](https://community.riskiq.com/)|Obtain information from RiskIQ's (formerly PassiveTotal) Passive DNS and Passive SSL databases.|Tiered API
 [Robtex](https://www.robtex.com/)|Search Robtex.com for hosts sharing the same IP.|Free API
-[Scylla](https://scylla.so/)|Gather breach data from Scylla API.|Free API
 [searchcode](https://searchcode.com/)|Search searchcode for code repositories mentioning the target domain.|Free API
 [SecurityTrails](https://securitytrails.com/)|Obtain Passive DNS and other information from SecurityTrails|Tiered API
 [Seon](https://seon.io/)|Queries seon.io to gather intelligence about IP Addresses, email addresses, and phone numbers|Commercial API
@@ -307,7 +303,6 @@ Social Network Identifier|Identify presence on social media networks such as Lin
 [Spamhaus Zen](https://www.spamhaus.org/)|Check if a netblock or IP address is in the Spamhaus Zen database.|Free API
 [spur.us](https://spur.us/)|Obtain information about any malicious activities involving IP addresses found|Commercial API
 [SpyOnWeb](http://spyonweb.com/)|Search SpyOnWeb for hosts sharing the same IP address, Google Analytics code, or Google Adsense code.|Tiered API
-[Spyse](https://spyse.com)|Search Spyse.com Internet assets registry for information about domains, IP addresses, host info, potential vulnerabilities, passive DNS, etc.|Tiered API
 SSL Certificate Analyzer|Gather information about SSL certificates used by the target's HTTPS sites.|Internal
 [StackOverflow](https://www.stackexchange.com)|Search StackOverflow for any mentions of a target domain. Returns potentially related information.|Tiered API
 [Steven Black Hosts](https://github.com/StevenBlack/hosts)|Check if a domain is malicious (malware or adware) according to Steven Black Hosts list.|Free API

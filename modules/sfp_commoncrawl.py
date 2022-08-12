@@ -8,7 +8,7 @@
 #
 # Created:     05/09/2018
 # Copyright:   (c) Steve Micallef 2018
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import json
@@ -87,7 +87,7 @@ class sfp_commoncrawl(SpiderFootPlugin):
         return ret
 
     def getLatestIndexes(self):
-        url = "https://commoncrawl.s3.amazonaws.com/cc-index/collections/index.html"
+        url = "https://index.commoncrawl.org/"
         res = self.sf.fetchUrl(url, timeout=60,
                                useragent="SpiderFoot")
 

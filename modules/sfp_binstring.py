@@ -7,12 +7,12 @@
 #
 # Created:     03/12/2016
 # Copyright:   (c) Steve Micallef
-# Licence:     GPL
+# Licence:     MIT
 # -------------------------------------------------------------------------------
 
 import string
 
-from spiderfoot import SpiderFootEvent, SpiderFootPlugin
+from spiderfoot import SpiderFootEvent, SpiderFootHelpers, SpiderFootPlugin
 
 
 class sfp_binstring(SpiderFootPlugin):
@@ -57,7 +57,7 @@ class sfp_binstring(SpiderFootPlugin):
         self.results = list()
         self.__dataSource__ = "Target Website"
 
-        self.d = set(self.sf.dictwords())
+        self.d = SpiderFootHelpers.dictionaryWordsFromWordlists()
 
         for opt in list(userOpts.keys()):
             self.opts[opt] = userOpts[opt]

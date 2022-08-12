@@ -7,7 +7,7 @@
 #
 # Created:      30/09/2012
 # Copyright:    (c) Steve Micallef 2012
-# License:      GPL
+# License:      MIT
 # -----------------------------------------------------------------
 import csv
 import html
@@ -125,7 +125,7 @@ class SpiderFootWebUi:
         """Error page."""
         cherrypy.response.status = 500
 
-        if self.config['_debug']:
+        if self.config.get('_debug'):
             cherrypy.response.body = _cperror.get_error_page(status=500, traceback=_cperror.format_exc())
         else:
             cherrypy.response.body = b"<html><body>Error</body></html>"
@@ -191,16 +191,20 @@ class SpiderFootWebUi:
         return templ.render(message=message, docroot=self.docroot, version=__version__)
 
     def cleanUserInput(self: 'SpiderFootWebUi', inputList: list) -> list:
-        """Sanitize user input, poorly.
+        """Convert data to HTML entities; except quotes and ampersands.
 
         Args:
-            inputList (list): TBD
+            inputList (list): list of strings to sanitize
 
         Returns:
             list: sanitized input
 
         Raises:
             TypeError: inputList type was invalid
+
+        Todo:
+            Review all uses of this function, then remove it.
+            Use of this function is overloaded.
         """
         if not isinstance(inputList, list):
             raise TypeError(f"inputList is {type(inputList)}; expected list()")
@@ -212,8 +216,8 @@ class SpiderFootWebUi:
                 ret.append('')
                 continue
             c = html.escape(item, True)
-            c = c.replace("'", '&quot;')
-            # We don't actually want & translated to &amp;
+
+            # Decode '&' and '"' HTML entities
             c = c.replace("&amp;", "&").replace("&quot;", "\"")
             ret.append(c)
 
@@ -361,6 +365,77 @@ class SpiderFootWebUi:
         cherrypy.response.headers['Content-Type'] = "application/csv"
         cherrypy.response.headers['Pragma'] = "no-cache"
         return fileobj.getvalue().encode('utf-8')
+
+    @cherrypy.expose
+    def scancorrelationsexport(self: 'SpiderFootWebUi', id: str, filetype: str = "csv", dialect: str = "excel") -> str:
+        """Get scan correlation data in CSV or Excel format.
+
+        Args:
+            id (str): scan ID
+            filetype (str): type of file ("xlsx|excel" or "csv")
+            dialect (str): CSV dialect (default: excel)
+
+        Returns:
+            str: results in CSV or Excel format
+        """
+        dbh = SpiderFootDb(self.config)
+
+        try:
+            scaninfo = dbh.scanInstanceGet(id)
+            scan_name = scaninfo[0]
+        except Exception:
+            return json.dumps(["ERROR", "Could not retrieve info for scan."]).encode('utf-8')
+
+        try:
+            correlations = dbh.scanCorrelationList(id)
+        except Exception:
+            return json.dumps(["ERROR", "Could not retrieve correlations for scan."]).encode('utf-8')
+
+        headings = ["Rule Name", "Correlation", "Risk", "Description"]
+
+        if filetype.lower() in ["xlsx", "excel"]:
+            rows = []
+            for row in correlations:
+                correlation = row[1]
+                rule_name = row[2]
+                rule_risk = row[3]
+                rule_description = row[5]
+                rows.append([rule_name, correlation, rule_risk, rule_description])
+
+            if scan_name:
+                fname = f"{scan_name}-SpiderFoot-correlations.xlxs"
+            else:
+                fname = "SpiderFoot-correlations.xlxs"
+
+            cherrypy.response.headers['Content-Disposition'] = f"attachment; filename={fname}"
+            cherrypy.response.headers['Content-Type'] = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            cherrypy.response.headers['Pragma'] = "no-cache"
+            return self.buildExcel(rows, headings, sheetNameIndex=0)
+
+        elif filetype.lower() == 'csv':
+            fileobj = StringIO()
+            parser = csv.writer(fileobj, dialect=dialect)
+            parser.writerow(headings)
+
+            for row in correlations:
+                correlation = row[1]
+                rule_name = row[2]
+                rule_risk = row[3]
+                rule_description = row[5]
+                parser.writerow([rule_name, correlation, rule_risk, rule_description])
+
+            if scan_name:
+                fname = f"{scan_name}-SpiderFoot-correlations.csv"
+            else:
+                fname = "SpiderFoot-correlations.csv"
+
+            cherrypy.response.headers['Content-Disposition'] = f"attachment; filename={fname}"
+            cherrypy.response.headers['Content-Type'] = "application/csv"
+            cherrypy.response.headers['Pragma'] = "no-cache"
+            return fileobj.getvalue().encode('utf-8')
+
+        else:
+            return self.error("Invalid export filetype.")
 
     @cherrypy.expose
     def scaneventresultexport(self: 'SpiderFootWebUi', id: str, type: str, filetype: str = "csv", dialect: str = "excel") -> str:
@@ -674,14 +749,14 @@ class SpiderFootWebUi:
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
-    def scanopts(self: 'SpiderFootWebUi', id: str) -> str:
+    def scanopts(self: 'SpiderFootWebUi', id: str) -> dict:
         """Return configuration used for the specified scan as JSON.
 
         Args:
             id: scan ID
 
         Returns:
-            str: options as JSON string
+            dict: scan options for the specified scan
         """
         dbh = SpiderFootDb(self.config)
         ret = dict()
@@ -1195,11 +1270,11 @@ class SpiderFootWebUi:
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
-    def eventtypes(self: 'SpiderFootWebUi') -> str:
+    def eventtypes(self: 'SpiderFootWebUi') -> list:
         """List all event types.
 
         Returns:
-            str: list of event types
+            list: list of event types
         """
         cherrypy.response.headers['Content-Type'] = "application/json; charset=utf-8"
 
@@ -1214,17 +1289,22 @@ class SpiderFootWebUi:
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
-    def modules(self: 'SpiderFootWebUi') -> str:
+    def modules(self: 'SpiderFootWebUi') -> list:
         """List all modules.
 
         Returns:
-            str: list of modules
+            list: list of modules
         """
         cherrypy.response.headers['Content-Type'] = "application/json; charset=utf-8"
 
-        modinfo = list(self.config['__modules__'].keys())
-        modinfo.sort()
         ret = list()
+
+        modinfo = list(self.config['__modules__'].keys())
+        if not modinfo:
+            return ret
+
+        modinfo.sort()
+
         for m in modinfo:
             if "__" in m:
                 continue
@@ -1234,16 +1314,20 @@ class SpiderFootWebUi:
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
-    def correlationrules(self: 'SpiderFootWebUi') -> str:
+    def correlationrules(self: 'SpiderFootWebUi') -> list:
         """List all correlation rules.
 
         Returns:
-            str: list of correlation rules
+            list: list of correlation rules
         """
         cherrypy.response.headers['Content-Type'] = "application/json; charset=utf-8"
 
-        rules = self.config['__correlationrules__']
         ret = list()
+
+        rules = self.config['__correlationrules__']
+        if not rules:
+            return ret
+
         for r in rules:
             ret.append({
                 'id': r['id'],
@@ -1308,7 +1392,8 @@ class SpiderFootWebUi:
         Raises:
             HTTPRedirect: redirect to new scan info page
         """
-        [scanname, scantarget] = self.cleanUserInput([scanname, scantarget])
+        scanname = self.cleanUserInput([scanname])[0]
+        scantarget = self.cleanUserInput([scantarget])[0]
 
         if not scanname:
             if cherrypy.request.headers.get('Accept') and 'application/json' in cherrypy.request.headers.get('Accept'):
@@ -1460,6 +1545,17 @@ class SpiderFootWebUi:
             dbh.scanInstanceSet(scan_id, status="ABORT-REQUESTED")
 
         return ""
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    def vacuum(self):
+        dbh = SpiderFootDb(self.config)
+        try:
+            if dbh.vacuumDB():
+                return json.dumps(["SUCCESS", ""]).encode('utf-8')
+            return json.dumps(["ERROR", "Vacuuming the database failed"]).encode('utf-8')
+        except Exception as e:
+            return json.dumps(["ERROR", f"Vacuuming the database failed: {e}"]).encode('utf-8')
 
     #
     # DATA PROVIDERS
