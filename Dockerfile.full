@@ -112,11 +112,11 @@ RUN git clone https://github.com/EnableSecurity/wafw00f \
 
 
 RUN <<EOT
-    find / -type d -name '.git' -delete
+    find /tools -type d -name '.git' | xargs rm -rf 
     find /tools -name '*.zip' -delete
 
-    apt install -t upx
-    find / -type f -executable -size +100M -exec upx "{}" \;
+    apt install -y upx
+    find /{opt,tools} -type f -executable -size +100M -exec upx "{}" \;
 
     cd /tools/wappalyzer
     wget https://gobinaries.com/tj/node-prune --output-document - | /bin/sh && node-prune
