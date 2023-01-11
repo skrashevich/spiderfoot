@@ -6,7 +6,7 @@
 # Written by: TheTechromancer
 #
 
-FROM python:3
+FROM python:3 as builder
 
 # Install tools/dependencies from apt
 RUN apt-get -y update && apt-get -y install nbtscan onesixtyone nmap
@@ -109,6 +109,22 @@ RUN git clone https://github.com/Tuhinshubhra/CMSeeK && cd CMSeeK \
 RUN git clone https://github.com/EnableSecurity/wafw00f \
     && cd wafw00f \
     && python3 setup.py install
+
+
+RUN <<EOT
+    find / -type d -name '.git' -delete
+    find /tools -name '*.zip' -delete
+
+    apt install -t upx
+    find / -type f -executable -size +100M -exec upx "{}" \;
+
+    cd /tools/wappalyzer
+    wget https://gobinaries.com/tj/node-prune --output-document - | /bin/sh && node-prune
+EOT
+
+FROM python:3
+COPY --from=builder / /
+
 WORKDIR /home/spiderfoot
 
 EXPOSE 5001
