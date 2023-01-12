@@ -117,9 +117,6 @@ RUN <<EOT
 
     apt install -y upx
     find /{opt,tools} -type f -executable -size +100M -exec upx "{}" \;
-
-    cd /tools/wappalyzer
-    wget https://gobinaries.com/tj/node-prune --output-document - | /bin/sh && node-prune
 EOT
 
 FROM python:3
